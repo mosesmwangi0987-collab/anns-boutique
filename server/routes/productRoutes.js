@@ -19,6 +19,16 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
+// --- THE FIX: GET ALL PRODUCTS ---
+router.get('/', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // POST new product with image upload
 router.post('/', upload.single('image'), async (req, res) => {
   try {
