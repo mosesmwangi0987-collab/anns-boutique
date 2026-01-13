@@ -29,3 +29,11 @@ body {
   background: #d4af37;
   border-radius: 5px;
 }
+
+.product-card:hover img {
+  transform: scale(1.05);
+}
+
+.product-card:hover {
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}

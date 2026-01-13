@@ -1,73 +1,137 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function Admin() {
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  // Boutique Admin Logic
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [pin, setPin] = useState('');
+  const [products, setProducts] = useState([]);
+  const [form, setForm] = useState({ name: '', price: '', category: 'Women' });
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState('');
 
-  const SECRET_PASSWORD = "2286annadmin"; 
+  const SECRET_PIN = "1234"; // 👈 Change this to your aunt's secret code!
+  const CLOUD_NAME = "dgbin04ws"; 
+  const UPLOAD_PRESET = "boutique_preset";
+  const API_URL = 'http://172.19.216.73:5000/api/products';
+
+  useEffect(() => { 
+    if(isLoggedIn) fetchProducts(); 
+  }, [isLoggedIn]);
+
+  const fetchProducts = async () => {
+    try {
+      const { data } = await axios.get(API_URL);
+      setProducts(data);
+    } catch (err) { console.error("Fetch error", err); }
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (password === SECRET_PASSWORD) {
-      setIsAuthenticated(true);
+    if (pin === SECRET_PIN) {
+      setIsLoggedIn(true);
     } else {
-      alert("Incorrect Password!");
+      alert("Wrong PIN! Please try again.");
+      setPin('');
     }
+  };
+
+  const handleUpload = async () => {
+    const data = new FormData();
+    data.append("file", image);
+    data.append("upload_preset", UPLOAD_PRESET);
+    const res = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, data);
+    return res.data.secure_url;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUploading(true);
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('price', price);
-    formData.append('description', description);
-    formData.append('image', image);
-
+    setMessage('⏳ Uploading to shop...');
     try {
-      await axios.post('/api/products', formData);
-      alert('Product Added!');
-      window.location.href = '/';
+      const imageUrl = await handleUpload();
+      await axios.post(API_URL, { ...form, imageUrl });
+      setMessage('✅ Success! Item is now live.');
+      setForm({ name: '', price: '', category: 'Women' });
+      setImage(null);
+      fetchProducts();
     } catch (err) {
-      alert('Upload failed');
+      setMessage('❌ Error: Upload failed.');
     } finally {
       setUploading(false);
     }
   };
 
-  if (!isAuthenticated) {
+  // --- LOGIN VIEW ---
+  if (!isLoggedIn) {
     return (
-      <div style={{ textAlign: 'center', marginTop: '100px' }}>
-        <h2>Admin Login</h2>
-        <form onSubmit={handleLogin}>
-          <input type="password" onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-          <button type="submit">Login</button>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#fffaf5', fontFamily: 'serif' }}>
+        <h1 style={{ letterSpacing: '2px', color: '#2c1810' }}>MANAGEMENT ACCESS</h1>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '300px' }}>
+          <input 
+            type="password" 
+            placeholder="Enter Secret PIN" 
+            value={pin} 
+            onChange={(e) => setPin(e.target.value)}
+            style={{ padding: '15px', textAlign: 'center', fontSize: '1.2rem', borderRadius: '8px', border: '1px solid #ccc' }}
+          />
+          <button type="submit" style={{ padding: '15px', background: '#2c1810', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+            UNLOCK DASHBOARD
+          </button>
         </form>
       </div>
     );
   }
 
+  // --- DASHBOARD VIEW (Only shows if PIN is correct) ---
   return (
-    <div style={{ padding: '40px' }}>
-      <h2>Add New Dress</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' }}>
-        <input type="text" placeholder="Name" onChange={(e) => setName(e.target.value)} required />
-        <input type="number" placeholder="Price" onChange={(e) => setPrice(e.target.value)} required />
-        <textarea placeholder="Description" onChange={(e) => setDescription(e.target.value)} required />
-        <input type="file" onChange={(e) => setImage(e.target.files[0])} required />
-        <button type="submit" disabled={uploading}>{uploading ? 'Uploading...' : 'Save Product'}</button>
+    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', fontFamily: 'serif' }}>
+       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <h2>Shop Manager</h2>
+          <button onClick={() => setIsLoggedIn(false)} style={{ background:'none', border:'1px solid #ccc', padding:'5px 10px', borderRadius:'5px', cursor:'pointer' }}>Logout</button>
+       </div>
+      
+      {message && <p style={{ background: '#fdf5e6', padding: '15px', borderRadius: '8px', borderLeft: '5px solid #d4af37' }}>{message}</p>}
+      
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+        <input placeholder="Product Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required style={{padding:'12px', borderRadius:'8px', border:'1px solid #ddd'}} />
+        <input type="number" placeholder="Price (KSh)" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required style={{padding:'12px', borderRadius:'8px', border:'1px solid #ddd'}} />
+        
+        <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} style={{padding:'12px', borderRadius:'8px', border:'1px solid #ddd'}}>
+          <option value="Women">Women</option>
+          <option value="Kids">Kids</option>
+          <option value="New Arrivals">New Arrivals</option>
+        </select>
+
+        <div style={{ border: '2px dashed #d4af37', padding: '20px', textAlign: 'center', borderRadius: '8px', background: '#fff' }}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>Product Photo:</p>
+          <input type="file" onChange={(e) => setImage(e.target.files[0])} required />
+        </div>
+
+        <button 
+          type="submit" 
+          disabled={uploading}
+          style={{ padding: '15px', background: uploading ? '#ccc' : '#2c1810', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', letterSpacing: '1px' }}
+        >
+          {uploading ? 'UPLOADING...' : 'PUBLISH TO WEBSITE'}
+        </button>
       </form>
+
+      <h3 style={{ marginTop: '40px' }}>Current Inventory ({products.length})</h3>
+      <div style={{ display: 'grid', gap: '10px' }}>
+        {products.map(p => (
+          <div key={p._id} style={{ display: 'flex', gap: '15px', background: '#fff', padding: '10px', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', alignItems: 'center' }}>
+            <img src={p.imageUrl} width="60" height="60" style={{ objectFit: 'cover', borderRadius: '6px' }} alt="" />
+            <div style={{ flex: 1 }}>
+               <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{p.name}</div>
+               <div style={{ color: '#8b4513', fontSize: '0.85rem' }}>KSh {Number(p.price).toLocaleString()}</div>
+            </div>
+            <button onClick={async () => { if(window.confirm('Delete this?')) { await axios.delete(`${API_URL}/${p._id}`); fetchProducts(); } }} style={{ color: '#ff4444', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Delete</button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
-
 
 export default Admin;
