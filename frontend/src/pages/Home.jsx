@@ -10,13 +10,20 @@ function Home() {
 
   const categories = ['All', 'Women', 'Kids', 'New Arrivals'];
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const ip = '172.19.216.73'; 
-        const { data } = await axios.get(`http://${ip}:5000/api/products`, { timeout: 3000 });
+        // 1. Get the URL from the environment variable
+        // If it doesn't exist (fallback), assume we are testing locally
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/products';
+        
+        console.log("Fetching from:", API_URL); // Helpful for debugging
+
+        const { data } = await axios.get(API_URL);
         setProducts(data);
       } catch (err) {
+        console.error("Error fetching products:", err);
+        // Fallback dummy data...
         setProducts([
           { _id: '1', name: 'African Print Summer Dress', price: '4500', category: 'Women', imageUrl: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=800' },
           { _id: '2', name: 'Nairobi Chic Wrap', price: '3800', category: 'Women', imageUrl: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800' },
