@@ -113,7 +113,7 @@ function Home() {
       {/* FOOTER */}
       <footer style={{ padding: '40px 20px', textAlign: 'center', fontSize: '0.8rem', color: '#8b4513', background: '#f3e5d8', marginTop: '40px' }}>
         <p style={{ fontWeight: 'bold' }}>VISIT OUR SHOP</p>
-        <p>Moi Avenue, Nairobi CBD</p>
+        <p>Nairobi CBD</p>
         <p style={{ fontSize: '0.7rem', opacity: 0.7, marginTop:'20px' }}>© 2024 Ann's Boutique</p>
       </footer>
     </div>

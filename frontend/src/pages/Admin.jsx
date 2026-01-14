@@ -13,7 +13,7 @@ function Admin() {
   const SECRET_PIN = "1234"; // 👈 Change this to your aunt's secret code!
   const CLOUD_NAME = "dgbin04ws"; 
   const UPLOAD_PRESET = "boutique_preset";
-  const API_URL = 'http://172.19.216.73:5000/api/products';
+   const API_URL = 'https://anns-boutique.onrender.com/api/products';
 
   useEffect(() => { 
     if(isLoggedIn) fetchProducts(); 
