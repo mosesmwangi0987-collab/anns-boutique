@@ -52,7 +52,7 @@ function Admin() {
     return res.data.secure_url;
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
     if (!image) return alert("Please select a photo first!");
     
@@ -60,24 +60,27 @@ function Admin() {
     setMessage('⏳ Uploading to shop...');
     
     try {
-      // 1. Send photo to Cloudinary
+      // 1. Upload to Cloudinary (This part is working!)
       const imageUrl = await handleUpload();
-      
-      // 2. Send product data to Render
-      await axios.post(API_URL, { 
-        name: form.name, 
-        price: Number(form.price), // 👈 Force price to be a Number
-        category: form.category, 
-        imageUrl 
-      });
+      console.log("Image uploaded successfully:", imageUrl);
+
+      // 2. Send to Render (This is where the 500 error happens)
+      const productData = {
+        name: form.name.trim(),
+        price: Number(form.price), // 👈 CRITICAL: Converts "2300" to 2300
+        category: form.category,
+        imageUrl: imageUrl
+      };
+
+      await axios.post(API_URL, productData);
 
       setMessage('✅ Success! Item is now live.');
       setForm({ name: '', price: '', category: 'Women' });
       setImage(null);
       fetchProducts();
     } catch (err) {
-      console.error(err);
-      setMessage('❌ Error: Upload failed. Check Cloudinary settings.');
+      console.error("Full Error Object:", err.response?.data || err.message);
+      setMessage(`❌ Server Error: ${err.response?.data?.message || 'Check Render Logs'}`);
     } finally {
       setUploading(false);
     }
