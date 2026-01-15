@@ -13,8 +13,7 @@ function Home() {
  useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // 1. Get the URL from the environment variable
-        // If it doesn't exist (fallback), assume we are testing locally
+
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/products';
         
         console.log("Fetching from:", API_URL); // Helpful for debugging
@@ -53,7 +52,7 @@ function Home() {
       <div style={{ background: '#2c1810', color: '#d4af37', padding: '8px', textAlign: 'center', fontSize: '0.65rem', letterSpacing: '2px', display: 'flex', justifyContent: 'center', gap: '15px' }}>
         <span>🇰🇪 DELIVERY COUNTRYWIDE</span>
         <span>•</span>
-        <span>📞 CALL TO ORDER: 0700 000 000</span>
+        <span>📞 CALL TO ORDER: 0722774122</span>
       </div>
 
       <header style={{ padding: '40px 20px', textAlign: 'center' }}>
