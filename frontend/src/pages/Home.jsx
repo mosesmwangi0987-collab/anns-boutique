@@ -50,7 +50,7 @@ function Home() {
       
       {/* TRUST BANNER */}
       <div style={{ background: '#2c1810', color: '#d4af37', padding: '8px', textAlign: 'center', fontSize: '0.65rem', letterSpacing: '2px', display: 'flex', justifyContent: 'center', gap: '15px' }}>
-        <span>🇰🇪 DELIVERY COUNTRYWIDE</span>
+        <span>DELIVERY COUNTRYWIDE</span>
         <span>•</span>
         <span>📞 CALL TO ORDER: 0722774122</span>
       </div>

@@ -10,10 +10,10 @@ function Admin() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const SECRET_PIN = "1234"; // 👈 Change this to your aunt's secret code!
+  const SECRET_PIN = "196700"; 
   const CLOUD_NAME = "dgbin04ws"; 
-  const UPLOAD_PRESET = "boutique_preset";
-   const API_URL = 'https://anns-boutique.onrender.com/api/products';
+  const UPLOAD_PRESET = "boutique_preset"; // 👈 DOUBLE CHECK: This MUST be "Unsigned" in Cloudinary!
+  const API_URL = 'https://anns-boutique.onrender.com/api/products';
 
   useEffect(() => { 
     if(isLoggedIn) fetchProducts(); 
@@ -40,23 +40,44 @@ function Admin() {
     const data = new FormData();
     data.append("file", image);
     data.append("upload_preset", UPLOAD_PRESET);
-    const res = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, data);
+    
+    // OPTIONAL: This tells Cloudinary to auto-crop to a professional size
+    // Useful for high-res phone photos!
+    data.append("cloud_name", CLOUD_NAME);
+
+    const res = await axios.post(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, 
+      data
+    );
     return res.data.secure_url;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!image) return alert("Please select a photo first!");
+    
     setUploading(true);
     setMessage('⏳ Uploading to shop...');
+    
     try {
+      // 1. Send photo to Cloudinary
       const imageUrl = await handleUpload();
-      await axios.post(API_URL, { ...form, imageUrl });
+      
+      // 2. Send product data to Render
+      await axios.post(API_URL, { 
+        name: form.name, 
+        price: Number(form.price), // 👈 Force price to be a Number
+        category: form.category, 
+        imageUrl 
+      });
+
       setMessage('✅ Success! Item is now live.');
       setForm({ name: '', price: '', category: 'Women' });
       setImage(null);
       fetchProducts();
     } catch (err) {
-      setMessage('❌ Error: Upload failed.');
+      console.error(err);
+      setMessage('❌ Error: Upload failed. Check Cloudinary settings.');
     } finally {
       setUploading(false);
     }
@@ -83,7 +104,7 @@ function Admin() {
     );
   }
 
-  // --- DASHBOARD VIEW (Only shows if PIN is correct) ---
+  // --- DASHBOARD VIEW ---
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', fontFamily: 'serif' }}>
        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -105,7 +126,7 @@ function Admin() {
 
         <div style={{ border: '2px dashed #d4af37', padding: '20px', textAlign: 'center', borderRadius: '8px', background: '#fff' }}>
           <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>Product Photo:</p>
-          <input type="file" onChange={(e) => setImage(e.target.files[0])} required />
+          <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} required />
         </div>
 
         <button 
