@@ -36,17 +36,16 @@ function Admin() {
     }
   };
 
-  const handleUpload = async () => {
+ const handleUpload = async () => {
     const data = new FormData();
     data.append("file", image);
-    data.append("upload_preset", UPLOAD_PRESET);
     
-    // OPTIONAL: This tells Cloudinary to auto-crop to a professional size
-    // Useful for high-res phone photos!
-    data.append("cloud_name", CLOUD_NAME);
+    // ⚠️ HARDCODE THE NAME HERE TO BE SAFE
+    // Make sure this matches your Cloudinary "Upload Presets" name exactly
+    data.append("upload_preset", "boutique_preset"); 
 
     const res = await axios.post(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, 
+      `https://api.cloudinary.com/v1_1/dgbin04ws/image/upload`, // Your Cloud Name is already here
       data
     );
     return res.data.secure_url;
